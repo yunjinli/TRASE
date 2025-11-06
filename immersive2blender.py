@@ -1,9 +1,9 @@
 #
-# Copyright (C) 2024, SADG
+# Copyright (C) 2024, TRASE
 # Technical University of Munich CVG
 # All rights reserved.
 #
-# SADG is heavily based on other research. Consider citing their works as well.
+# TRASE is heavily based on other research. Consider citing their works as well.
 # 3D Gaussian Splatting: https://github.com/graphdeco-inria/gaussian-splatting
 # Deformable-3D-Gaussians: https://github.com/ingra14m/Deformable-3D-Gaussians
 # gaussian-grouping: https://github.com/lkeab/gaussian-grouping
