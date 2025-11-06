@@ -43,6 +43,10 @@ The script [train.py](../train.py) is all you need :)
   Space-separated iterations at which the training script saves the Gaussian model.
   #### --densify_until_iter
   Iteration where densification stops, ```15_000``` by default.
+  #### --contrastive_mode
+  Select different mode for contrastive learning. Default: soft (available modes: soft, all, hard)
+  #### --mask_black_bg
+  Configure to mask out loss on black background pixels. Only used in Technicolor dataset.
 
 </details>
 
