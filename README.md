@@ -7,8 +7,8 @@
 - 2025/11/6: Accepted to 3DV 2026 👏. Release training code. The camera-ready version will be updated later.
 - 2025/05/11: We released the code for rendering and evaluation. We also updated the scripts for downloading / processing datasets. For more details, please check [documentation](./docs/).
 - 2025/01/20: We released the [standalone GUI](./gui_standalone.py). See [GUI Tutorial](./docs/gui.md) for details.
-- 2024/11/24: We released the [website](https://yunjinli.github.io/project-sadg/) for SADG
-- 2024/11/23: We plan to release the rest of the source code and also the Mask-Benchmarks later. If you would like to compare your method against SADG now, please contact the first author via email (yunjin.li@tum.de).
+- 2024/11/24: We released the [website](https://yunjinli.github.io/project-sadg/).
+- 2024/11/23: We plan to release the rest of the source code and also the Mask-Benchmarks later. If you would like to compare your method against us now, please contact the first author via email (yunjin.li@tum.de).
 
 ## Introduction
 
@@ -67,7 +67,7 @@ See [here](./docs/render.md)
 
 ## Scene Editing Application
 
-~~See [here](./docs/editing.md)~~ (TBA)
+See [here](./docs/editing.md)
 
 ## Evaluation on our Mask-Benchmarks
 
