@@ -29,7 +29,7 @@ As the standalone GUI doesn't have information regarding the length (in second) 
 ## Running the GUI script
 
 ```
-python gui_sadg.py -m output/<DATASET>/<NAME> --load_mask_on_the_fly --load_image_on_the_fly --eval --load2gpu_on_the_fly --iteration 30000
+python gui.py -m output/<DATASET>/<NAME> --load_mask_on_the_fly --load_image_on_the_fly --eval --load2gpu_on_the_fly --iteration 30000
 ```
 
 ## Changing Different Rendering Mode
