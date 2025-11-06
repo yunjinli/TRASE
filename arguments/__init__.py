@@ -1,9 +1,9 @@
 #
-# Copyright (C) 2024, SADG
+# Copyright (C) 2024, TRASE
 # Technical University of Munich CVG
 # All rights reserved.
 #
-# SADG is heavily based on other research. Consider citing their works as well.
+# TRASE is heavily based on other research. Consider citing their works as well.
 # 3D Gaussian Splatting: https://github.com/graphdeco-inria/gaussian-splatting
 # Deformable-3D-Gaussians: https://github.com/ingra14m/Deformable-3D-Gaussians
 # gaussian-grouping: https://github.com/lkeab/gaussian-grouping
@@ -69,10 +69,11 @@ class ModelParams(ParamGroup):
         self.is_blender = False
         self.is_6dof = False
         
-        ## SADG's implementation
+        ## TRASE's implementation
         self.load_mask_on_the_fly = False
         self.load_image_on_the_fly = False
-        self.end_frame = -1      
+        self.end_frame = -1
+        self.mask_black_bg = False ## Only for Technicolor dataset
           
         super().__init__(parser, "Loading Parameters", sentinel)
 
@@ -113,7 +114,7 @@ class OptimizationParams(ParamGroup):
         self.densify_until_iter = 15_000
         self.densify_grad_threshold = 0.0002
 
-        ## For SADG
+        ## For TRASE
         self.warm_up_3d_features = 10000
         self.iterative_opt_interval = 1000
         self.monitor_mem = False
@@ -127,6 +128,7 @@ class OptimizationParams(ParamGroup):
         self.rfn = 1.
         self.num_sampled_masks = 50
         
+        self.contrastive_mode = 'soft' ## all
         self.hard_positive_th = 0.75
         self.hard_negative_th = 0.5
         super().__init__(parser, "Optimization Parameters")

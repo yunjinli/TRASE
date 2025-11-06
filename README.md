@@ -4,6 +4,7 @@
 
 ## News
 
+- 2025/11/6: Accepted to 3DV 2026 👏. Release training code. The camera-ready version will be updated later.
 - 2025/05/11: We released the code for rendering and evaluation. We also updated the scripts for downloading / processing datasets. For more details, please check [documentation](./docs/).
 - 2025/01/20: We released the [standalone GUI](./gui_standalone.py). See [GUI Tutorial](./docs/gui.md) for details.
 - 2024/11/24: We released the [website](https://yunjinli.github.io/project-sadg/) for SADG
@@ -11,7 +12,7 @@
 
 ## Introduction
 
-We introduce TRASE, Tracking-free 4D Segmentation and Editing, a novel approach that combines dynamic Gaussian Splatting representation and semantic information without reliance on object IDs. We propose to learn semantically-aware features by leveraging masks generated from the Segment Anything Model (SAM) and utilizing our novel contrastive learning objective based on hard pixel mining. The learned Gaussian features can be effectively clustered without further post-processing. This enables fast computation for further object-level editing, such as object removal, composition, and style transfer by manipulating the Gaussians in the scene. Due to the lack of consistent evaluation protocol, we extend several dynamic novel-view datasets with segmentation benchmarks that allow testing of learned feature fields from unseen viewpoints. We evaluate SADG on proposed benchmarks and demonstrate the superior performance of our approach in segmenting objects within dynamic scenes along with its effectiveness for further downstream editing tasks.
+we introduce TRASE, a novel tracking-free 4D segmentation method for dynamic scene understanding. TRASE learns a 4D segmentation feature field in a weakly-supervised manner, leveraging a soft-mined contrastive learning objective guided by SAM masks. The resulting feature space is semantically coherent and well-separated, and final object-level segmentation is obtained via unsupervised clustering. This enables fast editing, such as object removal, composition, and style transfer, by directly manipulating the scene's Gaussians. We evaluate TRASE on five dynamic benchmarks, demonstrating state-of-the-art segmentation performance from unseen viewpoints and its effectiveness across various interactive editing tasks.
 
 ![teaser](assets/teaser.jpg)
 
@@ -19,10 +20,10 @@ We introduce TRASE, Tracking-free 4D Segmentation and Editing, a novel approach 
 
 ```
 ## Setup the environment
-git clone https://github.com/yunjinli/SADG-SegmentAnyDynamicGaussian.git
-cd SADG
+git clone https://github.com/yunjinli/TRASE.git
+cd TRASE
 git submodule update --init --recursive
-conda create -n SADG python=3.8 -y
+conda create -n TRASE python=3.8 -y
 pip install "git+https://github.com/facebookresearch/pytorch3d.git@stable"
 pip install torch==1.13.1+cu117 torchvision==0.14.1+cu117 torchaudio==0.13.1 --extra-index-url https://download.pytorch.org/whl/cu117
 pip install opencv-python plyfile tqdm scipy wandb opencv-python scikit-learn lpips imageio[ffmpeg] dearpygui kmeans_pytorch hdbscan scikit-image bitarray
@@ -54,7 +55,7 @@ See [here](./docs/prepare_dataset.md)
 
 ## Train
 
-~~See [here](./docs/train.md)~~ (TBA)
+See [here](./docs/train.md)
 
 ## GUI
 

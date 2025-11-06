@@ -1,9 +1,9 @@
 #
-# Copyright (C) 2024, SADG
+# Copyright (C) 2024, TRASE
 # Technical University of Munich CVG
 # All rights reserved.
 #
-# SADG is heavily based on other research. Consider citing their works as well.
+# TRASE is heavily based on other research. Consider citing their works as well.
 # 3D Gaussian Splatting: https://github.com/graphdeco-inria/gaussian-splatting
 # Deformable-3D-Gaussians: https://github.com/ingra14m/Deformable-3D-Gaussians
 # gaussian-grouping: https://github.com/lkeab/gaussian-grouping
@@ -22,8 +22,10 @@ import torch
 import torch.nn.functional as F
 from torch.autograd import Variable
 from math import exp
+from scipy.spatial import cKDTree
 import pytorch3d.ops as ops
-from torch.nn.functional import cosine_similarity, sigmoid
+from torch.nn.functional import mse_loss, cosine_similarity, sigmoid
+from torchvision.utils import save_image
 
 def l1_loss(network_output, gt):
     return torch.abs((network_output - gt)).mean()
@@ -268,3 +270,137 @@ def cal_style_loss(target, style, weight):
     
 def cal_mse_content_loss(x, y):
     return torch.nn.functional.mse_loss(x, y)
+
+def pixel_mask_correspondence_loss_positive(C, C_F, positive_th=0.75, weights=None, verbose=False, log_tb=False, tb_writer=None, iteration=None):
+    diag_mask = torch.eye(C_F.shape[0], dtype=bool, device=C_F.device)
+
+    positive_mask = torch.any(C == 1, dim = 0)
+    positive_mask = torch.logical_and(positive_mask, ~diag_mask)
+    positive_mask = torch.triu(positive_mask, diagonal=0) ## set the symmetric part to false
+    number_of_all_pixel_pair = torch.nonzero(positive_mask).shape[0]
+    positive_mask = torch.logical_and(positive_mask, C == 1)
+    
+    positive_mask = positive_mask.bool()
+        
+    if weights is not None:
+        return (-weights[positive_mask]* C_F[positive_mask]).sum() / number_of_all_pixel_pair
+    else:
+        return (-C_F[positive_mask]).sum() / number_of_all_pixel_pair
+
+def pixel_mask_correspondence_loss_negative(C, C_F, negative_th=0.5, weights=None, verbose=False, log_tb=False, tb_writer=None, iteration=None):
+    diag_mask = torch.eye(C_F.shape[0], dtype=bool, device=C_F.device)
+    negative_mask = torch.any(C == 0, dim = 0)
+    negative_mask = torch.logical_and(negative_mask, ~diag_mask)
+    negative_mask = torch.triu(negative_mask, diagonal=0) ## set the symmetric part to false
+    number_of_all_pixel_pair = torch.nonzero(negative_mask).shape[0]
+    negative_mask = torch.logical_and(negative_mask, C == 0)
+    negative_mask = negative_mask.bool()
+        
+    if weights is not None:
+        return (weights[negative_mask] * torch.relu(C_F[negative_mask])).sum() / number_of_all_pixel_pair
+    else:
+        return (torch.relu(C_F[negative_mask])).sum() / number_of_all_pixel_pair
+
+def pixel_mask_correspondence_loss_soft_hard_positive(C, C_F, positive_th=0.75, weights=None, verbose=False, log_tb=False, tb_writer=None, iteration=None):
+    diag_mask = torch.eye(C_F.shape[0], dtype=bool, device=C_F.device)
+    soft_hard_positive_mask = torch.any(torch.logical_and(C_F < positive_th, C == 1), dim = 0)
+    soft_hard_positive_mask = torch.logical_and(soft_hard_positive_mask, ~diag_mask)
+    soft_hard_positive_mask = torch.triu(soft_hard_positive_mask, diagonal=0) ## set the symmetric part to false
+    
+    number_of_all_pixel_pair = torch.nonzero(soft_hard_positive_mask).shape[0]
+    soft_hard_positive_mask = torch.logical_and(soft_hard_positive_mask, C == 1)
+    
+    soft_hard_positive_mask = soft_hard_positive_mask.bool()
+    
+    if soft_hard_positive_mask.sum() == 0: ## No positvie sample found
+        print("[WARNING] no positive sample found")
+        return 0.0
+    else:
+        if weights is not None:
+            loss = (-weights[soft_hard_positive_mask] * C_F[soft_hard_positive_mask]).sum() / number_of_all_pixel_pair
+            
+        else:
+            loss = (-C_F[soft_hard_positive_mask]).sum() / number_of_all_pixel_pair
+            
+        return loss
+
+def pixel_mask_correspondence_loss_soft_negative(C, C_F, negative_th=0.5, weights=None, verbose=False, log_tb=False, tb_writer=None, iteration=None):
+    diag_mask = torch.eye(C_F.shape[0], dtype=bool, device=C_F.device)
+    soft_hard_negative_mask = torch.any(torch.logical_and(C_F > negative_th, C == 0), dim = 0)
+    
+    soft_hard_negative_mask = torch.logical_and(soft_hard_negative_mask, ~diag_mask)
+    
+    soft_hard_negative_mask = torch.triu(soft_hard_negative_mask, diagonal=0) ## set the symmetric part to false
+    
+    number_of_all_pixel_pair = torch.nonzero(soft_hard_negative_mask).shape[0]
+    
+    soft_hard_negative_mask = torch.logical_and(soft_hard_negative_mask, C == 0)
+    soft_hard_negative_mask = soft_hard_negative_mask.bool()
+        
+    if soft_hard_negative_mask.sum() == 0:
+        print("[WARNING] no negative sample found")
+        return 0.0
+    else:
+        if weights is not None:
+            loss = (weights[soft_hard_negative_mask] * torch.relu(C_F[soft_hard_negative_mask])).sum() / number_of_all_pixel_pair
+        else:
+            loss = (torch.relu(C_F[soft_hard_negative_mask])).sum() / number_of_all_pixel_pair
+
+        return loss
+
+def pixel_mask_correspondence_loss_hard_positive(C, C_F, positive_th=0.75, weights=None, verbose=False, log_tb=False, tb_writer=None, iteration=None):
+    diag_mask = torch.eye(C.shape[0], dtype=bool, device=C_F.device)
+
+    # Find hard positive indices (i, j)
+    hard_positive_mask = torch.triu((C_F < positive_th) & (C == 1) & (~diag_mask), diagonal=0)
+    hard_positive_indices = torch.nonzero(hard_positive_mask, as_tuple=False)
+
+    if hard_positive_indices.shape[0] == 0:
+        print("[WARNING] no hard positive sample found")
+        return torch.tensor(0.0, device=C_F.device)
+
+    i, j = hard_positive_indices[:, 0], hard_positive_indices[:, 1]
+
+    # Compute loss
+    C_F_hard = C_F[i, j]  # Use indexed values instead of masked tensor
+
+    if weights is not None:
+        loss = (-weights[i, j] * C_F_hard).mean()
+    else:
+        loss = (-C_F_hard).mean()
+
+    return loss
+
+def pixel_mask_correspondence_loss_hard_negative(C, C_F, negative_th=0.5, weights=None, verbose=False, log_tb=False, tb_writer=None, iteration=None):
+    diag_mask = torch.eye(C.shape[0], dtype=bool, device=C_F.device)
+
+    # Find hard negative indices (i, j)
+    hard_negative_mask = torch.triu((C_F > negative_th) & (C == 0) & (~diag_mask), diagonal=0)
+    hard_negative_indices = torch.nonzero(hard_negative_mask, as_tuple=False)
+    if hard_negative_indices.shape[0] == 0:
+        print("[WARNING] no hard negative sample found")
+        return torch.tensor(0.0, device=C_F.device)
+
+    i, j = hard_negative_indices[:, 0], hard_negative_indices[:, 1]
+
+    # Compute loss
+    C_F_hard = C_F[i, j]
+
+    if weights is not None:
+        loss = (weights[i, j] * torch.relu(C_F_hard)).mean()
+    else:
+        loss = (torch.relu(C_F_hard)).mean()
+
+    return loss
+    
+positive_pixel_pair_loss = {
+    'hard': pixel_mask_correspondence_loss_hard_positive,
+    'all': pixel_mask_correspondence_loss_positive,
+    'soft': pixel_mask_correspondence_loss_soft_hard_positive
+}
+
+negative_pixel_pair_loss = {
+    'hard': pixel_mask_correspondence_loss_hard_negative,
+    'all': pixel_mask_correspondence_loss_negative,
+    'soft': pixel_mask_correspondence_loss_soft_negative
+}

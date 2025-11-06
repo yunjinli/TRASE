@@ -1,9 +1,9 @@
 #
-# Copyright (C) 2024, SADG
+# Copyright (C) 2024, TRASE
 # Technical University of Munich CVG
 # All rights reserved.
 #
-# SADG is heavily based on other research. Consider citing their works as well.
+# TRASE is heavily based on other research. Consider citing their works as well.
 # 3D Gaussian Splatting: https://github.com/graphdeco-inria/gaussian-splatting
 # Deformable-3D-Gaussians: https://github.com/ingra14m/Deformable-3D-Gaussians
 # gaussian-grouping: https://github.com/lkeab/gaussian-grouping
@@ -1325,7 +1325,7 @@ class GUI:
             dpg.add_mouse_click_handler(button=dpg.mvMouseButton_Left, callback=callback_select_point)
 
         dpg.create_viewport(
-            title="SADG: Segment Any Dynamic Gaussian Without Object Trackers",
+            title="TRASE: Tracking-free 4D Segmentation and Editing",
             width=self.W + 600,
             height=self.H + (45 if os.name == "nt" else 0),
             resizable=False,

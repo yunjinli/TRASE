@@ -1,9 +1,9 @@
 #
-# Copyright (C) 2024, SADG
+# Copyright (C) 2024, TRASE
 # Technical University of Munich CVG
 # All rights reserved.
 #
-# SADG is heavily based on other research. Consider citing their works as well.
+# TRASE is heavily based on other research. Consider citing their works as well.
 # 3D Gaussian Splatting: https://github.com/graphdeco-inria/gaussian-splatting
 # Deformable-3D-Gaussians: https://github.com/ingra14m/Deformable-3D-Gaussians
 # gaussian-grouping: https://github.com/lkeab/gaussian-grouping
@@ -292,84 +292,6 @@ def qvec2rotmat(qvec):
          2 * qvec[2] * qvec[3] + 2 * qvec[0] * qvec[1],
          1 - 2 * qvec[1]**2 - 2 * qvec[2]**2]])
     
-# def update_transform(path, train_frames, test_frames):
-#     new_cam_intrinsics = {}
-#     with open(os.path.join(path, 'tmp/created/sparse/cameras.txt'), "r") as cam:
-#         lines = cam.readlines()
-#         for i in range(0,len(lines),1):
-#             if lines[i][0] != '#':
-#                 strLists = lines[i].split()
-#                 cameraId=int(strLists[0])
-#                 width=int(strLists[2])
-#                 height=int(strLists[3])
-#                 paramstr=np.array(strLists[4:12])
-#                 params = paramstr.astype(np.float64)
-#                 new_cam_intrinsics[cameraId] = {'w': width,
-#                                                 'h': height,
-#                                                 'fl_x': params[0],
-#                                                 'fl_y': params[1],
-#                                                 'cx': params[2],
-#                                                 'cy': params[3],
-#                                                 }
-#     new_cam_poses_intrinsics = {}
-#     with open(os.path.join(path, 'tmp/created/sparse/images.txt'), "r") as cam:
-#         lines = cam.readlines()
-#         for i in range(0,len(lines),1):
-#             if lines[i][0] != '#':
-#                 if '.png' in lines[i]:
-#                     strLists = lines[i].split()
-#                     cam_name = strLists[-1][:11]
-#                     cam_id = int(strLists[-2])
-#                     new_cam_poses_intrinsics[cam_name] = new_cam_intrinsics[cam_id]
-#                     poses = np.array(strLists[1:8]).astype(np.float64)
-#                     w2c = np.eye(4)
-#                     w2c[:3, :3] = qvec2rotmat(poses[:4])
-#                     w2c[:3, 3] = poses[4:]
-#                     new_cam_poses_intrinsics[cam_name]['transform_matrix'] = w2c.tolist()
-    
-#     new_train_frames = []
-#     new_test_frames = []
-#     for frame in train_frames:
-#         cam_name = frame['file_path'].split('/')[-1][:11]
-#         if cam_name in new_cam_poses_intrinsics.keys():
-#             # print(new_cam_poses_intrinsics[cam_name])
-#             frame['transform_matrix'] = new_cam_poses_intrinsics[cam_name]['transform_matrix']
-#             frame['w'] = new_cam_poses_intrinsics[cam_name]['w']
-#             frame['h'] = new_cam_poses_intrinsics[cam_name]['h']
-#             frame['fl_x'] = new_cam_poses_intrinsics[cam_name]['fl_x']
-#             frame['fl_y'] = new_cam_poses_intrinsics[cam_name]['fl_y']
-#             frame['cx'] = new_cam_poses_intrinsics[cam_name]['cx']
-#             frame['cy'] = new_cam_poses_intrinsics[cam_name]['cy']
-#             # print(frame)
-#             new_train_frames.append(frame)
-        
-#     for frame in test_frames:
-#         cam_name = frame['file_path'].split('/')[-1][:11]
-#         if cam_name in new_cam_poses_intrinsics.keys():
-#             frame['transform_matrix'] = new_cam_poses_intrinsics[cam_name]['transform_matrix']
-#             frame['w'] = new_cam_poses_intrinsics[cam_name]['w']
-#             frame['h'] = new_cam_poses_intrinsics[cam_name]['h']
-#             frame['fl_x'] = new_cam_poses_intrinsics[cam_name]['fl_x']
-#             frame['fl_y'] = new_cam_poses_intrinsics[cam_name]['fl_y']
-#             frame['cx'] = new_cam_poses_intrinsics[cam_name]['cx']
-#             frame['cy'] = new_cam_poses_intrinsics[cam_name]['cy']
-#             new_test_frames.append(frame)
-            
-#     train_transforms = {
-#         'frames': new_train_frames,
-#     }
-#     test_transforms = {
-#         'frames': new_test_frames,
-#     }
-#     train_output_path = os.path.join(path, 'transforms_train.json')
-#     test_output_path = os.path.join(path, 'transforms_test.json')
-#     print(f'[INFO] write to {train_output_path} and {test_output_path}')
-    
-#     with open(train_output_path, 'w') as f:
-#         json.dump(train_transforms, f, indent=2)
-#     with open(test_output_path, 'w') as f:
-#         json.dump(test_transforms, f, indent=2)
-    
 def fixbroken(imagepath, refimagepath):
     try:
         img = Image.open(imagepath) # open the image file
@@ -476,11 +398,7 @@ if __name__ == '__main__':
                 cx = row[1] / args.scale
                 cy = row[2] / args.scale
                 
-                # new_cx = width / 2
-                # new_cy = height / 2
                 
-                # dx = new_cx - cx
-                # dy = new_cy - cy
                 colmapQ = [row[5], row[6], row[7], row[8]] 
                 colmapT = [row[9], row[10], row[11]]
                 
@@ -657,42 +575,6 @@ if __name__ == '__main__':
         
         print(f"[INFO] Initial point cloud is saved in {os.path.join(args.path, 'points3d.ply')}.")
         
-        # os.makedirs(os.path.join(args.path, 'image_cp'), exist_ok=True)
-        
-        # for frame in train_frames:
-        #     original_image = cv2.imread(os.path.join(args.path, frame['file_path'] + '.png'))
-        #     w = frame['w'] 
-        #     h = frame['h'] 
-        #     c_x = frame['cx']
-        #     c_y = frame['cy']
-        #     new_c_x, new_c_y = w / 2, h / 2 
-
-        #     # Compute the translation matrix
-        #     translation_matrix = np.array([
-        #         [1, 0, new_c_x - c_x],
-        #         [0, 1, new_c_y - c_y]
-        #     ], dtype=np.float32)
-
-        #     # Apply the translation to the image
-        #     translated_image = cv2.warpAffine(original_image, translation_matrix, (w, h))
-        #     cv2.imwrite(os.path.join(args.path, 'image_cp', frame['file_path'].split('/')[-1] + '.png'), translated_image)
-        # for frame in test_frames:
-        #     original_image = cv2.imread(os.path.join(args.path, frame['file_path'] + '.png'))
-        #     w = frame['w'] 
-        #     h = frame['h'] 
-        #     c_x = frame['cx']
-        #     c_y = frame['cy']
-        #     new_c_x, new_c_y = w / 2, h / 2 
-
-        #     # Compute the translation matrix
-        #     translation_matrix = np.array([
-        #         [1, 0, new_c_x - c_x],
-        #         [0, 1, new_c_y - c_y]
-        #     ], dtype=np.float32)
-
-        #     # Apply the translation to the image
-        #     translated_image = cv2.warpAffine(original_image, translation_matrix, (w, h))
-        #     cv2.imwrite(os.path.join(args.path, 'image_cp', frame['file_path'].split('/')[-1] + '.png'), translated_image)
     else:
         print(f"Extracted train / test images from video. Please make sure that you have points3d.ply, transforms_test.json, and transforms_train.json saved in the data folder for {scene_name}. Otherwise, you have to set --extract_image_only to False...")
         

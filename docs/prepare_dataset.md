@@ -85,13 +85,13 @@ and then extract downscaled images `images_2x/*` from raw video by running:
 
 ```
 cd ../../
-python immersive2blender.py --path data/immersive/<NAME> --scale 2 --end 50 --extract_image_only
+python immersive2blender.py --path data/immersive/<NAME> --scale 2 --extract_image_only
 ```
 
 Otherwise, you have to set --extract_image_only to `False` by running:
 
 ```
-python immersive2blender.py --path data/immersive/<NAME> --scale 2 --end 50
+python immersive2blender.py --path data/immersive/<NAME> --scale 2
 ```
 
 Then you will generate the images_2x/\*, points3d.ply, transforms_test.json, and transforms_train.json on your own.
