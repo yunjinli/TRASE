@@ -25,7 +25,7 @@ cd TRASE
 git submodule update --init --recursive
 conda create -n TRASE python=3.8 -y
 pip install torch==1.13.1+cu117 torchvision==0.14.1+cu117 torchaudio==0.13.1 --extra-index-url https://download.pytorch.org/whl/cu117
-pip install "git+https://github.com/facebookresearch/pytorch3d.git@stable"
+pip install "git+https://github.com/facebookresearch/pytorch3d.git@stable" ## We are using v0.7.6
 pip install opencv-python plyfile tqdm scipy opencv-python scikit-learn lpips imageio[ffmpeg] dearpygui kmeans_pytorch hdbscan scikit-image bitarray
 python -m pip install submodules/diff-gaussian-rasterization
 python -m pip install submodules/simple-knn
