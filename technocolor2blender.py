@@ -348,138 +348,127 @@ if __name__ == '__main__':
 
     extractframes(args.path, startframe=scene_frames[0], endframe=scene_frames[1], downscale=args.scale)
     
-    if not args.extract_image_only:    
-        if args.scale != 1:
-            images = [f[len(args.path):] for f in sorted(glob.glob(os.path.join(args.path, f"images_{args.scale}x/", "*"))) if f.lower().endswith('png') or f.lower().endswith('jpg') or f.lower().endswith('jpeg')]
-            cams = sorted(set([im[10:21] for im in images]))
+    if args.scale != 1:
+        images = [f[len(args.path):] for f in sorted(glob.glob(os.path.join(args.path, f"images_{args.scale}x/", "*"))) if f.lower().endswith('png') or f.lower().endswith('jpg') or f.lower().endswith('jpeg')]
+        cams = sorted(set([im[10:21] for im in images]))
+    else:
+        images = [f[len(args.path):] for f in sorted(glob.glob(os.path.join(args.path, "images/", "*"))) if f.lower().endswith('png') or f.lower().endswith('jpg') or f.lower().endswith('jpeg')]
+        cams = sorted(set([im[7:18] for im in images]))
+
+    print(f'[INFO] loaded {len(images)} images from {len(cams)} videos')
+    N = len(cams)
+    
+    H = 1088
+    W = 2048
+    
+    print(f'[INFO] Original: H = {H}, W = {W}')
+    
+    print(f'[INFO] H = {H // args.scale}, W = {W // args.scale}')
+    
+    train_frames = []
+    test_frames = []
+    poses = []
+    cam_infos = {}
+    
+    with open(os.path.join(args.path, "cameras_parameters.txt"), "r") as f:
+        meta = csv.reader(f, delimiter=" ")
+        for idx, row in enumerate(meta):
+            if idx == 0:
+                continue
+            idx = idx - 1
+            cameraname = f'camera_{str(idx).zfill(4)}'
+            
+            row = [float(c) for c in row if c.strip() != '']
+            
+            width = W // args.scale
+            height = H // args.scale
+            
+            fx = row[0] / args.scale
+            fy = row[0] / args.scale
+
+            cx = row[1] / args.scale
+            cy = row[2] / args.scale
+            
+            
+            colmapQ = [row[5], row[6], row[7], row[8]] 
+            colmapT = [row[9], row[10], row[11]]
+            
+            w2c = np.eye(4)
+            w2c[:3, :3] = qvec2rotmat(np.array(colmapQ))
+            w2c[:3, 3] = np.array(colmapT)
+
+            poses.append(w2c)
+            
+            cam_infos[cameraname] = {
+                "w": width,
+                "h": height,
+                "fl_x": fx,
+                "fl_y": fy,
+                "cx": cx,
+                "cy": cy,
+            }
+    # print(cam_infos)
+    for i in range(N):
+        cam_frames = [{'file_path': im.lstrip("/").split('.')[0], 
+                    'transform_matrix': poses[i].tolist(),
+                    'w': cam_infos[cams[i]]['w'],
+                    'h': cam_infos[cams[i]]['h'],
+                    'fl_x': cam_infos[cams[i]]['fl_x'],
+                    'fl_y': cam_infos[cams[i]]['fl_y'],
+                    'cx': cam_infos[cams[i]]['cx'],
+                    'cy': cam_infos[cams[i]]['cy'],
+                    'time': (int(im.lstrip("/").split('.')[0][-4:]) - scene_frames[0]) / 30.} for im in images if cams[i] in im]
+        if i == 0:
+            test_frames += cam_frames
         else:
-            images = [f[len(args.path):] for f in sorted(glob.glob(os.path.join(args.path, "images/", "*"))) if f.lower().endswith('png') or f.lower().endswith('jpg') or f.lower().endswith('jpeg')]
-            cams = sorted(set([im[7:18] for im in images]))
+            train_frames += cam_frames
 
-        # N = len(list(meta))
-        print(f'[INFO] loaded {len(images)} images from {len(cams)} videos')
-        N = len(cams)
-        # assert N == len(cams)
+    train_transforms = {
+        'frames': train_frames,
+    }
+    test_transforms = {
+        'frames': test_frames,
+    }
+    for frame in train_frames:
+        original_image = cv2.imread(os.path.join(args.path, frame['file_path'] + '.png'))
+        w = frame['w'] 
+        h = frame['h'] 
+        c_x = frame['cx']
+        c_y = frame['cy']
+        new_c_x, new_c_y = w / 2, h / 2 
+
+        # Compute the translation matrix
+        translation_matrix = np.array([
+            [1, 0, new_c_x - c_x],
+            [0, 1, new_c_y - c_y]
+        ], dtype=np.float32)
         
-        H = 1088
-        W = 2048
+        # Apply the translation to the image
+        translated_image = cv2.warpAffine(original_image, translation_matrix, (w, h))
+        cv2.imwrite(os.path.join(args.path, frame['file_path'] + '.png'), translated_image)
+        frame['cx'] = new_c_x
+        frame['cy'] = new_c_y
+    for frame in test_frames:
+        original_image = cv2.imread(os.path.join(args.path, frame['file_path'] + '.png'))
+        w = frame['w'] 
+        h = frame['h'] 
+        c_x = frame['cx']
+        c_y = frame['cy']
+        new_c_x, new_c_y = w / 2, h / 2 
+
+        # Compute the translation matrix
+        translation_matrix = np.array([
+            [1, 0, new_c_x - c_x],
+            [0, 1, new_c_y - c_y]
+        ], dtype=np.float32)
+
+        # Apply the translation to the image
+        translated_image = cv2.warpAffine(original_image, translation_matrix, (w, h))
+        cv2.imwrite(os.path.join(args.path, frame['file_path'] + '.png'), translated_image)
+        frame['cx'] = new_c_x
+        frame['cy'] = new_c_y
         
-        print(f'[INFO] Original: H = {H}, W = {W}')
-
-        # with open(os.path.join(args.path, "models_new.json"), "r") as f:
-        #     meta = json.load(f)
-            
-        # H = meta[0]['height']
-        # W = meta[0]['width']
-        
-        print(f'[INFO] H = {H // args.scale}, W = {W // args.scale}')
-        
-        train_frames = []
-        test_frames = []
-        poses = []
-        cam_infos = {}
-        
-        with open(os.path.join(args.path, "cameras_parameters.txt"), "r") as f:
-            meta = csv.reader(f, delimiter=" ")
-            for idx, row in enumerate(meta):
-                if idx == 0:
-                    continue
-                idx = idx - 1
-                cameraname = f'camera_{str(idx).zfill(4)}'
-                
-                row = [float(c) for c in row if c.strip() != '']
-                
-                width = W // args.scale
-                height = H // args.scale
-                
-                fx = row[0] / args.scale
-                fy = row[0] / args.scale
-
-                cx = row[1] / args.scale
-                cy = row[2] / args.scale
-                
-                
-                colmapQ = [row[5], row[6], row[7], row[8]] 
-                colmapT = [row[9], row[10], row[11]]
-                
-                w2c = np.eye(4)
-                w2c[:3, :3] = qvec2rotmat(np.array(colmapQ))
-                w2c[:3, 3] = np.array(colmapT)
-
-                poses.append(w2c)
-                
-                cam_infos[cameraname] = {
-                    "w": width,
-                    "h": height,
-                    "fl_x": fx,
-                    "fl_y": fy,
-                    "cx": cx,
-                    "cy": cy,
-                }
-        # print(cam_infos)
-        for i in range(N):
-            cam_frames = [{'file_path': im.lstrip("/").split('.')[0], 
-                        'transform_matrix': poses[i].tolist(),
-                        'w': cam_infos[cams[i]]['w'],
-                        'h': cam_infos[cams[i]]['h'],
-                        'fl_x': cam_infos[cams[i]]['fl_x'],
-                        'fl_y': cam_infos[cams[i]]['fl_y'],
-                        'cx': cam_infos[cams[i]]['cx'],
-                        'cy': cam_infos[cams[i]]['cy'],
-                        'time': (int(im.lstrip("/").split('.')[0][-4:]) - scene_frames[0]) / 30.} for im in images if cams[i] in im]
-            if i == 0:
-                test_frames += cam_frames
-            else:
-                train_frames += cam_frames
-
-        train_transforms = {
-            'frames': train_frames,
-        }
-        test_transforms = {
-            'frames': test_frames,
-        }
-
-        # os.makedirs(os.path.join(args.path, 'image_cp'), exist_ok=True)
-        
-        for frame in train_frames:
-            original_image = cv2.imread(os.path.join(args.path, frame['file_path'] + '.png'))
-            w = frame['w'] 
-            h = frame['h'] 
-            c_x = frame['cx']
-            c_y = frame['cy']
-            new_c_x, new_c_y = w / 2, h / 2 
-
-            # Compute the translation matrix
-            translation_matrix = np.array([
-                [1, 0, new_c_x - c_x],
-                [0, 1, new_c_y - c_y]
-            ], dtype=np.float32)
-            
-            # Apply the translation to the image
-            translated_image = cv2.warpAffine(original_image, translation_matrix, (w, h))
-            cv2.imwrite(os.path.join(args.path, frame['file_path'] + '.png'), translated_image)
-            frame['cx'] = new_c_x
-            frame['cy'] = new_c_y
-        for frame in test_frames:
-            original_image = cv2.imread(os.path.join(args.path, frame['file_path'] + '.png'))
-            w = frame['w'] 
-            h = frame['h'] 
-            c_x = frame['cx']
-            c_y = frame['cy']
-            new_c_x, new_c_y = w / 2, h / 2 
-
-            # Compute the translation matrix
-            translation_matrix = np.array([
-                [1, 0, new_c_x - c_x],
-                [0, 1, new_c_y - c_y]
-            ], dtype=np.float32)
-
-            # Apply the translation to the image
-            translated_image = cv2.warpAffine(original_image, translation_matrix, (w, h))
-            cv2.imwrite(os.path.join(args.path, frame['file_path'] + '.png'), translated_image)
-            frame['cx'] = new_c_x
-            frame['cy'] = new_c_y
-            
+    if not args.extract_image_only:            
         train_output_path = os.path.join(args.path, 'transforms_train.json')
         test_output_path = os.path.join(args.path, 'transforms_test.json')
         print(f'[INFO] write to {train_output_path} and {test_output_path}')
