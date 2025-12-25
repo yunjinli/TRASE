@@ -32,14 +32,17 @@ rm misc_keyboard.zip
 rm misc_oven-mitts.zip 
 rm misc_split-cookie.zip 
 
-mv -r chickchicken ./interp
-mv -r cut-lemon1 ./interp
-mv -r hand1-dense-v2 ./interp
-mv -r slice-banana ./interp
-mv -r torchocolate ./interp
+mkdir interp
+mkdir misc
 
-mv -r americano ./misc
-mv -r espresso ./misc
-mv -r keyboard ./misc
-mv -r oven-mitts ./misc
-mv -r split-cookie ./misc
+mv chickchicken ./interp
+mv cut-lemon1 ./interp
+mv hand1-dense-v2 ./interp
+mv slice-banana ./interp
+mv torchocolate ./interp
+
+mv americano ./misc
+mv espresso ./misc
+mv keyboard ./misc
+mv oven-mitts ./misc
+mv split-cookie ./misc
