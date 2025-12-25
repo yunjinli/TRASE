@@ -25,7 +25,7 @@ bash download_dataset.bash
 For generating the anything-masks from SAM.
 
 ```
-python extract_masks.py --img_path data/HyperNeRF/<interp/misc>/<NAME>/rgb/2x --output data/NeRF-DS/<NAME> --iou_th 0.88 --stability_score_th 0.95 --downsample_mask 2
+python extract_masks.py --img_path data/HyperNeRF/<interp/misc>/<NAME>/rgb/2x --output data/HyperNeRF/<interp/misc>/<NAME>/ --iou_th 0.88 --stability_score_th 0.95 --downsample_mask 2
 ```
 
 ### Neu3D
