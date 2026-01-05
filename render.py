@@ -195,7 +195,7 @@ def render_set(model_path, is_6dof, name, iteration, views, gaussians, pipeline,
             d_xyz, d_rotation, d_scaling = deform.step(xyz.detach(), time_input) if model_type == 'DeformNetwork' else deform.step(xyz.detach(), time_input, gaussians.get_gaussian_features.squeeze(1))
                 
             results = render(view, gaussians, pipeline, background, d_xyz, d_rotation, d_scaling, is_6dof)
-            torch.save(results['render_gaussian_features'], os.path.join(render_feats_path, '{0:05d}'.format(idx) + ".pt"))
+            # torch.save(results['render_gaussian_features'], os.path.join(render_feats_path, '{0:05d}'.format(idx) + ".pt"))
             rendering = results["render"]
             
             if idx == 0:
