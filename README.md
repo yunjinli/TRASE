@@ -75,8 +75,8 @@ See [here](./docs/evaluation.md)
 ## BibTex
 
 ```
-@article{li2024sadg,
-    title={SADG: Segment Any Dynamic Gaussian Without Object Trackers},
+@article{li2024trase,
+    title={TRASE: Tracking-free 4D Segmentation and Editing},
     author={Li, Yun-Jin and Gladkova, Mariia and Xia, Yan and Cremers, Daniel},
     journal={arXiv preprint arXiv:2411.19290},
     year={2024}
