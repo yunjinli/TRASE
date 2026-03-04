@@ -1,6 +1,6 @@
 # TRASE: Tracking-free 4D Segmentation and Editing
 
-## [Project page](https://yunjinli.github.io/project-sadg/) | [Paper](https://arxiv.org/abs/2411.19290)
+## [Project page](https://yunjinli.github.io/project-sadg/) | [Paper](https://arxiv.org/abs/2411.19290) | [iOS App](https://github.com/yunjinli/DeformableMetalSplatter)
 
 ## News
 
