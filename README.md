@@ -4,7 +4,8 @@
 
 ## News
 
-- 2025/11/6: Accepted to 3DV 2026 👏. Release training code. The camera-ready version will be updated later.
+- 2026/03/04: We added docker support! I hope it helps the dev process for people who are interested :)
+- 2025/11/06: Accepted to 3DV 2026 👏. Release training code. The camera-ready version will be updated later.
 - 2025/05/11: We released the code for rendering and evaluation. We also updated the scripts for downloading / processing datasets. For more details, please check [documentation](./docs/).
 - 2025/01/20: We released the [standalone GUI](./gui_standalone.py). See [GUI Tutorial](./docs/gui.md) for details.
 - 2024/11/24: We released the [website](https://yunjinli.github.io/project-sadg/).
@@ -18,6 +19,11 @@ we introduce TRASE, a novel tracking-free 4D segmentation method for dynamic sce
 
 ## Installation
 
+<details>
+  <summary><b>Click to expand: Local Installation</b></summary>
+
+### Local Installation
+
 ```
 ## Setup the environment
 git clone https://github.com/yunjinli/TRASE.git
@@ -25,7 +31,7 @@ cd TRASE
 git submodule update --init --recursive
 conda create -n TRASE python=3.8 -y
 pip install torch==1.13.1+cu117 torchvision==0.14.1+cu117 torchaudio==0.13.1 --extra-index-url https://download.pytorch.org/whl/cu117
-pip install "git+https://github.com/facebookresearch/pytorch3d.git@stable" ## We are using v0.7.6
+pip install "git+https://github.com/facebookresearch/pytorch3d.git@v0.7.6" ## We are using v0.7.6
 pip install opencv-python plyfile tqdm scipy opencv-python scikit-learn lpips imageio[ffmpeg] dearpygui kmeans_pytorch hdbscan scikit-image bitarray
 python -m pip install submodules/diff-gaussian-rasterization
 python -m pip install submodules/simple-knn
@@ -47,6 +53,71 @@ Note: If you have an error from Grounding-DINO: `TypeError: annotate() got an un
 ```
 pip install supervision==0.21.0
 ```
+
+</details>
+<details>
+  <summary><b>Click to expand: Docker Installation</b></summary>
+
+### Prerequisites
+
+Before using Docker, ensure you have the [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html) installed and configured on your host machine. This is strictly required for Docker to access your GPU and compile the CUDA extensions.
+
+### Setup Repository
+
+First, clone the repository and download the required submodules and model weights:
+
+```
+git clone https://github.com/yunjinli/TRASE.git
+cd TRASE
+git submodule update --init --recursive
+
+## Install SAM weights
+cd dependency
+bash install.bash
+git clone https://github.com/hkchengrex/Grounded-Segment-Anything.git
+```
+
+### Option 1: Running with VS Code (Recommended)
+
+This method automatically handles port forwarding, volume mounting, and provides a fully configured IDE environment.
+
+1. Install the Dev Containers extension in VS Code.
+
+2. Open the TRASE folder in VS Code.
+
+3. Press F1 (or Ctrl+Shift+P), type Dev Containers: Rebuild and Reopen in Container, and hit Enter.
+
+4. VS Code will automatically build the image, compile all CUDA submodules, and attach your editor to the container.
+
+5. Open a new terminal in VS Code and you are ready to run the code!
+
+### Option 2: Running via Command Line
+
+If you prefer using the terminal directly, you can launch the environment using Docker Compose.
+
+1. Enable GUI Forwarding (Linux Hosts): Allow Docker to communicate with your host's X11 display server so the standalone GUI can render.
+
+```
+xhost +local:docker
+```
+
+2. Build and Start the Container:
+
+```
+# Export your user ID to prevent root-owned file permission issues
+export UID=$(id -u)
+export GID=$(id -g)
+
+docker-compose up -d --build
+```
+
+3. Access the Container Shell:
+
+```
+docker exec -it trase-container bash
+```
+
+</details>
 
 ## Dataset Preparation
 
@@ -87,7 +158,8 @@ See [here](./docs/evaluation.md)
 
 We appreciate all the authors from [3D Gaussian Splatting](https://github.com/graphdeco-inria/gaussian-splatting), [Deformable 3D Gaussians](https://github.com/ingra14m/Deformable-3D-Gaussians), [SC-GS](https://github.com/yihua7/SC-GS), [Gaussian Grouping](https://github.com/lkeab/gaussian-grouping), [SAGA](https://github.com/Jumpat/SegAnyGAussians) for sharing their amazing works to promote further research in this area. Consider also citing their paper.
 
-<details> <summary><b>Expand BibTeX</b></summary>
+<details> 
+<summary><b>Expand BibTeX</b></summary>
     
 ```
 @Article{kerbl3Dgaussians,
@@ -137,3 +209,5 @@ We appreciate all the authors from [3D Gaussian Splatting](https://github.com/gr
       journal={arXiv preprint arXiv:2312.00860},
 }
 ```
+
+</details>

@@ -1,0 +1,31 @@
+version: "3.8"
+
+services:
+  trase-dev:
+    build:
+      context: .
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
+    image: trase-env
+    container_name: trase-container
+    # Maps your live code in, while keeping the compiled binaries safe in ~/.local/
+    volumes:
+      - .:/home/devuser/TRASE
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - ~/.cache/huggingface:/home/devuser/.cache/huggingface
+      - ~/.cache/torch:/home/devuser/.cache/torch
+    environment:
+      - DISPLAY=${DISPLAY}
+      - NVIDIA_DRIVER_CAPABILITIES=all
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu, video, compute, utility, display]
+    network_mode: host
+    ipc: host
+    stdin_open: true
+    tty: true

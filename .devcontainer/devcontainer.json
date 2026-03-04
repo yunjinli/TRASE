@@ -1,0 +1,18 @@
+{
+  "name": "TRASE Dev Environment",
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "trase-dev",
+  "workspaceFolder": "/home/devuser/TRASE",
+  "customizations": {
+    "vscode": {
+        "settings": {
+            "terminal.integrated.defaultProfile.linux": "bash"
+        },
+        "extensions": [
+            "ms-python.python",
+            "ms-python.vscode-pylance"
+        ]
+    }
+  },
+  "remoteUser": "devuser"
+}

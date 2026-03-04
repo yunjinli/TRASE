@@ -1,0 +1,56 @@
+# ----------------------------------
+# Git
+# ----------------------------------
+.git
+.gitignore
+.gitmodules
+
+# ----------------------------------
+# Docker & IDE configurations
+# ----------------------------------
+.devcontainer/
+docker-compose.yml
+Dockerfile
+.vscode/
+.idea/
+
+# ----------------------------------
+# Python & Local Virtual Environments
+# ----------------------------------
+__pycache__/
+*.pyc
+*.pyo
+venv/
+env/
+.venv/
+.env
+
+# ----------------------------------
+# Host Machine Build Artifacts
+# (Prevents local C++/.so files from breaking the container build)
+# ----------------------------------
+build/
+dist/
+*.egg-info/
+*.so
+
+# ----------------------------------
+# Massive Data & Model Weights
+# (These should be accessed via the volume mount, NOT baked into the image!)
+# ----------------------------------
+data/
+datasets/
+weights/
+checkpoints/
+ckpts/
+*.pt
+*.pth
+*.ckpt
+*.bin
+
+# ----------------------------------
+# Training Outputs & Logs
+# ----------------------------------
+output/
+results/
+logs/
