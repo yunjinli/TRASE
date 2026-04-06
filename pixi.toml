@@ -1,0 +1,63 @@
+[workspace]
+name = "TRASE"
+channels = ["nvidia", "conda-forge"]
+platforms = ["linux-64"]
+
+[dependencies]
+# --- 1. SYSTEM & COMPILERS (CONDA) ---
+python = "3.8.*"
+ninja = "*"             # Drastically speeds up PyTorch3D compilation
+gcc = "11.*"            # C compiler for custom CUDA extensions
+gxx = "11.*"            # C++ compiler
+cuda-version = "11.8.*"
+
+# 2. Add the toolkit (Explicitly pin to match cuda-version!)
+cuda-toolkit = "11.8.*"
+
+# 3. Explicitly request the compiler toolchain (Explicitly pin to match cuda-version!)
+cuda-nvcc = "11.8.*"
+cuda-nvcc_linux-64 = "11.8.*"
+pip = "*"
+
+[pypi-options]
+# --- 2. PIP CONFIGURATION ---
+extra-index-urls = ["https://download.pytorch.org/whl/cu118"]
+
+[pypi-dependencies]
+# --- 3. PYTHON PACKAGES (UV/PIP) ---
+# Deep Learning Core
+torch = "==2.0.0"
+torchvision = "==0.15.1"
+torchaudio = "==2.0.1"
+
+# Standard Vision & Utility Libraries
+opencv-python = "*"
+plyfile = "*"
+tqdm = "*"
+scipy = "*"
+scikit-learn = "*"
+lpips = "*"
+supervision = "==0.21.0"
+imageio = { version = "*", extras = ["ffmpeg"] }
+dearpygui = "*"
+kmeans_pytorch = "*"
+hdbscan = "*"
+scikit-image = "*"
+bitarray = "*"
+
+[tasks]
+build-pytorch3d = { cmd = "pip install git+https://github.com/facebookresearch/pytorch3d.git@v0.7.6 --no-build-isolation" }
+
+build-renderers = { cmd = "pip install ./submodules/diff-gaussian-rasterization ./submodules/simple-knn" }
+
+build-groundingsam = { cmd = "cd dependency; bash install.bash; git clone https://github.com/hkchengrex/Grounded-Segment-Anything.git; cd Grounded-Segment-Anything; AM_I_DOCKER=False BUILD_WITH_CUDA=True python -m pip install -e segment_anything; AM_I_DOCKER=False BUILD_WITH_CUDA=True python -m pip install -e GroundingDINO" }
+
+build-submodules = { depends-on = [
+    "build-pytorch3d",
+    "build-renderers",
+    "build-groundingsam",
+] }
+
+## Make sure you follow the steps here: https://github.com/yunjinli/TRASE/blob/master/docs/gui.md
+## to download the example scenes first for running the demo.
+demo = "python gui_standalone.py -m ./sadg_example_models/sear_steak --iteration 30000"
