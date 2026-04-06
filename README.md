@@ -20,9 +20,9 @@ we introduce TRASE, a novel tracking-free 4D segmentation method for dynamic sce
 ## Installation
 
 <details>
-  <summary><b>Click to expand: Local Installation</b></summary>
+  <summary><b>Click to expand: Local Installation (Conda)</b></summary>
 
-### Local Installation
+### Local Installation with Conda
 
 ```
 ## Setup the environment
@@ -115,6 +115,24 @@ docker-compose up -d --build
 
 ```
 docker exec -it trase-container bash
+```
+
+</details>
+<details>
+  <summary><b>Click to expand: Local Installation (Pixi)</b></summary>
+
+### Local Installation with Pixi
+
+```
+## Setup the environment
+git clone https://github.com/yunjinli/TRASE.git
+cd TRASE
+git submodule update --init --recursive
+
+pixi install
+pixi run build-submodules
+pixi run demo ## Make sure you download the example scene first!!!
+pixi shell ## enter the env
 ```
 
 </details>
